@@ -330,11 +330,39 @@ def session():
     """
     global _session
     if not _session:
-        auth = loading.load_auth_from_conf_options(cfg.CONF, CONF_GROUP)
-        sess = SessionLoader().load_from_conf_options(cfg.CONF, CONF_GROUP, auth=auth)
-        _session = loading.load_adapter_from_conf_options(
-            cfg.CONF, CONF_GROUP, session=sess
+        # check env vars needed
+        env_vars = [
+            'OS_AUTH_URL',
+            'OS_USERNAME',
+            'OS_PASSWORD',
+            'OS_USER_DOMAIN_NAME',
+            'OS_PROJECT_ID',
+        ]
+        for var in env_vars: 
+            if var not in os.environ:
+                logger.error(f"environment variable {var} is not set." \
+                            " source open-rc file first.")
+                return
+
+        # create a keystone password auth
+        from keystoneauth1.identity import v3
+        from keystoneauth1 import session
+
+        auth = v3.Password(
+            auth_url=os.environ.get('OS_AUTH_URL'),
+            username=os.environ.get('OS_USERNAME'),
+            password=os.environ.get('OS_PASSWORD'),
+            user_domain_name=os.environ.get('OS_USER_DOMAIN_NAME'),
+            project_id=os.environ.get('OS_PROJECT_ID'),
         )
+
+        # create keystone session to pass to Openstack clients
+        _session = session.Session(auth=auth)
+        if not _session:
+            _session = None
+            print("keystone authentication failed")
+            return None
+            
     return _session
 
 
