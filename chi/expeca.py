@@ -2,15 +2,43 @@ import json, time
 from loguru import logger
 import chi
 from chi import lease
+from chi import container
 from blazarclient.exception import BlazarClientException
 
 
+CONTAINER_STATUS_CHECK_TIMEOUT_SEC = 30
+CONTAINER_STATUS_CHECK_PERIOD_SEC = 5
 LEASE_STATUS_CHECK_TIMEOUT_SEC = 120
 LEASE_STATUS_CHECK_PERIOD_SEC = 5
 CREATE_LEASE_RETRY_NUM = 2
 CREATE_LEASE_RETRY_PERIOD_SEC = 5
 REMOVE_LEASE_RETRY_NUM = 1
 REMOVE_LEASE_RETRY_PERIOD_SEC = 5
+
+
+def get_container_status(containername: str) -> str:
+    containerslist = chi.container.list_containers()
+    status = None
+    for container in containerslist:
+        contdict = container.to_dict()
+        if contdict['name'] == containername:
+            status = contdict['status']
+    return status
+
+def wait_until_container_removed(containername : str) -> None:
+
+    logger.info(f"waiting {CONTAINER_STATUS_CHECK_TIMEOUT_SEC} seconds"\
+                f" for {containername} container to be removed")
+    
+    mustend = time.time() + CONTAINER_STATUS_CHECK_TIMEOUT_SEC
+    while time.time() < mustend:
+        time.sleep(CONTAINER_STATUS_CHECK_PERIOD_SEC)
+        status = get_container_status(containername)
+        logger.info(f"container {containername} is in {status} state.")
+        if status == None:
+            return
+    
+    raise Exception(f"timeout reached, container {containername} is stuck in {status}.")
 
 
 # NOTE: do not push too many lease requests at the same time it causes errors
