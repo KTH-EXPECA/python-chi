@@ -3,7 +3,8 @@ gnocchiclient
 keystoneauth1
 openstacksdk
 paramiko
-python-blazarclient
+loguru
+python-blazarclient @ git+https://github.com/ChameleonCloud/python-blazarclient.git
 python-cinderclient
 python-glanceclient
 python-ironicclient
