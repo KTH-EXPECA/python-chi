@@ -227,7 +227,8 @@ def create_subnet(subnet_name, network_id,
                   cidr='192.168.1.0/24',
                   allocation_pool_start=None,
                   allocation_pool_end=None,
-                  gateway_ip=None) -> dict:
+                  gateway_ip=None,
+                  enable_dhcp=False) -> dict:
     """Create a subnet on a network.
 
     Args:
@@ -246,6 +247,7 @@ def create_subnet(subnet_name, network_id,
         'cidr': cidr,
         'ip_version': 4,
         'network_id': network_id,
+        'enable_dhcp': enable_dhcp,
     }
     if gateway_ip:
         subnet['gateway_ip'] = gateway_ip
