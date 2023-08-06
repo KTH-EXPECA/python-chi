@@ -134,6 +134,17 @@ def show_reservation_byid(leaseid: str, brief : bool = False) -> dict:
                 result = lease
     return result
 
+def show_reservation_byname(leasename: str, brief : bool = False) -> dict:
+    leaselist = chi.blazar().lease.list()
+    result = None
+    for lease in leaselist:
+        if lease['name'] == leasename:
+            if brief:
+                result = shorten_lease(lease)
+            else:
+                result = lease
+    return result
+
 def list_reservations(brief : bool = False) -> list:
     leaselist = chi.blazar().lease.list()
     newleaselist = []
