@@ -229,3 +229,46 @@ def reserve(item : dict):
             logger.info(f"waiting {CREATE_LEASE_RETRY_PERIOD_SEC} seconds"\
                 f" for {item['name']} to retry reserving it.")
             time.sleep(CREATE_LEASE_RETRY_PERIOD_SEC)
+
+
+# function to restart any sdr
+def restart_sdr(sdr_name : str, sdr_net_id: str, worker_reservation_id: str, worker_net_interface: str):
+
+    container = chi.container.create_container(
+        name = "reboot-sdr",
+        image = "samiemostafavi/sdr-tools",
+        reservation_id = worker_reservation_id,
+        nets = [
+            { "network" : sdr_net_id },
+        ],
+        environment = {
+            "SERVICE":"reboot",
+            "SDR":sdr_name,
+            "JSON_PATH":"sdrs.json"
+        },
+        labels = {
+            "networks.1.interface":worker_net_interface,
+            "networks.1.ip":f"10.30.1.253/24"
+        },
+    )
+    chi.container.wait_for_active(f"reboot-sdr")
+    logger.success(f"created reboot-sdr container.")
+
+    logger.info(f"waiting 2 minutes for the {sdr_name} to reboot.")
+    success = False
+    for i in range(100):
+        time.sleep(1)
+        log = chi.container.get_logs("reboot-sdr")
+        if "is up again." in log:
+            success = True
+            break
+
+    if success:
+        logger.success(log)
+    else:
+        logger.warning(log)
+
+    status = get_container_status("reboot-sdr")
+    if status:
+        chi.container.destroy_container("reboot-sdr")
+        wait_until_container_removed("reboot-sdr")
