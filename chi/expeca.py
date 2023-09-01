@@ -370,7 +370,7 @@ def make_sdr_ni(sdr_name : str, sdr_net_id: str, worker_reservation_id: str, wor
         wait_until_container_removed("make-sdr-mango")
 
 # function to run sdr_tools
-def sdr_tools(sdr_name : str, sdr_net_id: str, environment: dict, waiting_iter: int, waiting_sec: int, worker_reservation_id: str, worker_net_interface: str):
+def sdr_tools(sdr_name : str, sdr_net_id: str, environment: dict, waiting_iter: int, waiting_sec: int, worker_reservation_id: str, key_str: str, verbose: bool, worker_net_interface: str):
     cont_name = f"{sdr_name}-tools"
     container = chi.container.create_container(
         name = cont_name,
@@ -389,11 +389,23 @@ def sdr_tools(sdr_name : str, sdr_net_id: str, environment: dict, waiting_iter: 
     logger.success(f"created {cont_name} container.")
 
     logger.info(f"waiting {waiting_iter} times each {waiting_sec} seconds for the {cont_name} to apply.")
+    success = False
     for i in range(waiting_iter):
         time.sleep(waiting_sec)
         log = chi.container.get_logs(cont_name)
-        logger.info(log)
-           
+        if key_str in log:
+            success = True
+            break
+
+    if success:
+        logger.success(f"{cont_name} was successful.")
+        if verbose:
+            logger.success(log)
+    else:
+        logger.warning(f"{cont_name} was not successful.")
+        if verbose:
+            logger.warning(log)
+
     status = get_container_status(cont_name)
     if status:
         chi.container.destroy_container(cont_name)
