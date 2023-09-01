@@ -368,3 +368,33 @@ def make_sdr_ni(sdr_name : str, sdr_net_id: str, worker_reservation_id: str, wor
     if status:
         chi.container.destroy_container("make-sdr-mango")
         wait_until_container_removed("make-sdr-mango")
+
+# function to run sdr_tools
+def sdr_tools(sdr_name : str, sdr_net_id: str, environment: dict, waiting_iter: int, waiting_sec: int, worker_reservation_id: str, worker_net_interface: str):
+    cont_name = f"{sdr_name}-tools"
+    container = chi.container.create_container(
+        name = cont_name,
+        image = "samiemostafavi/sdr-tools",
+        reservation_id = worker_reservation_id,
+        nets = [
+            { "network" : sdr_net_id },
+        ],
+        environment = environment,
+        labels = {
+            "networks.1.interface":worker_net_interface,
+            "networks.1.ip":f"10.30.1.253/24"
+        },
+    )
+    chi.container.wait_for_active(cont_name)
+    logger.success(f"created {cont_name} container.")
+
+    logger.info(f"waiting {waiting_iter} times each {waiting_sec} seconds for the {cont_name} to apply.")
+    for i in range(waiting_iter):
+        time.sleep(waiting_sec)
+        log = chi.container.get_logs(cont_name)
+        logger.info(log)
+           
+    status = get_container_status(cont_name)
+    if status:
+        chi.container.destroy_container(cont_name)
+        wait_until_container_removed(cont_name)
