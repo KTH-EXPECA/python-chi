@@ -393,18 +393,23 @@ def sdr_tools(sdr_name : str, sdr_net_id: str, environment: dict, waiting_iter: 
     for i in range(waiting_iter):
         time.sleep(waiting_sec)
         log = chi.container.get_logs(cont_name)
-        if key_str in log:
-            success = True
-            break
+        if key_str:
+            if key_str in log:
+                success = True
+                break
 
-    if success:
-        logger.success(f"{cont_name} was successful.")
-        if verbose:
-            logger.success(log)
+    if key_str:
+        if success:
+            logger.success(f"{cont_name} was successful.")
+            if verbose:
+                logger.success(log)
+        else:
+            logger.warning(f"{cont_name} was not successful.")
+            if verbose:
+                logger.warning(log)
     else:
-        logger.warning(f"{cont_name} was not successful.")
         if verbose:
-            logger.warning(log)
+            logger.info(log)
 
     status = get_container_status(cont_name)
     if status:
