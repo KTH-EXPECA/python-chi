@@ -272,3 +272,99 @@ def restart_sdr(sdr_name : str, sdr_net_id: str, worker_reservation_id: str, wor
     if status:
         chi.container.destroy_container("reboot-sdr")
         wait_until_container_removed("reboot-sdr")
+
+
+# function to make any sdr mango
+def make_sdr_mango(sdr_name : str, sdr_net_id: str, worker_reservation_id: str, worker_net_interface: str):
+
+    container = chi.container.create_container(
+        name = "make-sdr-mango",
+        image = "samiemostafavi/sdr-tools",
+        reservation_id = worker_reservation_id,
+        nets = [
+            { "network" : sdr_net_id },
+        ],
+        environment = {
+            "SERVICE":"change_design",
+            "DESIGN":'mango',
+            "SDR":sdr_name,
+            "JSON_PATH":"sdrs.json"
+        },
+        labels = {
+            "networks.1.interface":worker_net_interface,
+            "networks.1.ip":f"10.30.1.253/24"
+        },
+    )
+    chi.container.wait_for_active(f"make-sdr-mango")
+    logger.success(f"created make-sdr-mango container.")
+
+    logger.info(f"waiting 2 minutes for the {sdr_name} to change design.")
+    success = False
+    for i in range(100):
+        time.sleep(1)
+        log = chi.container.get_logs("make-sdr-mango")
+        if "design has been changed to mango" in log:
+            success = True
+            break
+        
+        if "is already set" in log:
+            success = True
+            break
+
+    if success:
+        logger.success(log)
+    else:
+        logger.warning(log)
+
+    status = get_container_status("make-sdr-mango")
+    if status:
+        chi.container.destroy_container("make-sdr-mango")
+        wait_until_container_removed("make-sdr-mango")
+
+
+# function to make any sdr ni
+def make_sdr_ni(sdr_name : str, sdr_net_id: str, worker_reservation_id: str, worker_net_interface: str):
+
+    container = chi.container.create_container(
+        name = "make-sdr-mango",
+        image = "samiemostafavi/sdr-tools",
+        reservation_id = worker_reservation_id,
+        nets = [
+            { "network" : sdr_net_id },
+        ],
+        environment = {
+            "SERVICE":"change_design",
+            "DESIGN":'ni',
+            "SDR":sdr_name,
+            "JSON_PATH":"sdrs.json"
+        },
+        labels = {
+            "networks.1.interface":worker_net_interface,
+            "networks.1.ip":f"10.30.1.253/24"
+        },
+    )
+    chi.container.wait_for_active(f"make-sdr-mango")
+    logger.success(f"created make-sdr-mango container.")
+
+    logger.info(f"waiting 2 minutes for the {sdr_name} to change design.")
+    success = False
+    for i in range(100):
+        time.sleep(1)
+        log = chi.container.get_logs("make-sdr-mango")
+        if "design has been changed to ni" in log:
+            success = True
+            break
+        
+        if "is already set" in log:
+            success = True
+            break
+
+    if success:
+        logger.success(log)
+    else:
+        logger.warning(log)
+
+    status = get_container_status("make-sdr-mango")
+    if status:
+        chi.container.destroy_container("make-sdr-mango")
+        wait_until_container_removed("make-sdr-mango")
