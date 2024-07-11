@@ -1,4 +1,4 @@
-import json, time
+import json, time, requests
 from loguru import logger
 import chi
 from chi import lease
