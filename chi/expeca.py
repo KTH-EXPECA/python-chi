@@ -16,6 +16,18 @@ REMOVE_LEASE_RETRY_NUM = 1
 REMOVE_LEASE_RETRY_PERIOD_SEC = 5
 
 
+def get_available_publicips():
+    url = "http://testbed.expeca.proj.kth.se:56900/"
+    response = requests.get(url)
+    if response.status_code == 200:
+        data = response.json()
+        available_ips = data.get('available_ips', [])
+        return available_ips
+    else:
+        logger.error(f"Failed to retrieve data, status code: {response.status_code}")
+        return []
+
+
 def get_container_status(containername: str) -> str:
     containerslist = chi.container.list_containers()
     status = None
