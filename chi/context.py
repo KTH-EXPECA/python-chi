@@ -3,6 +3,7 @@ import os
 import sys
 import time
 
+from loguru import logger
 from keystoneauth1.identity.v3 import OidcAccessToken
 from keystoneauth1 import loading
 from keystoneauth1.loading.conf import _AUTH_SECTION_OPT, _AUTH_TYPE_OPT
