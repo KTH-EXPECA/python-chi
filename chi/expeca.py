@@ -27,6 +27,37 @@ def get_available_publicips():
         logger.error(f"Failed to retrieve data, status code: {response.status_code}")
         return []
 
+# NOTE: name format: sdr-xx, adv-xx, or ep5g
+def get_segment_ids(radio_name):
+    pattern_sdr = re.compile(r'^sdr-\d{2}$')
+    pattern_adv = re.compile(r'^adv-\d{2}$')
+    pattern_ep5g = re.compile(r'^ep5g$')
+    if not (pattern_sdr.match(radio_name) or pattern_adv.match(radio_name) or pattern_ep5g.match(radio_name)):
+        logger.error(f"Wrong format, the argument has to be like sdr-xx, adv-xx, or ep5g")
+        return {}
+        
+    url = f"http://testbed.expeca.proj.kth.se:56901/?name={radio_name}"
+    response = requests.get(url)
+    if response.status_code == 200:
+        return response.json()
+    else:
+        logger.error(f"Failed to retrieve data, status code: {response.status_code}")
+        return {}
+        
+# NOTE: name format: worker-xx
+def get_worker_interfaces(worker_name):
+    pattern_worker = re.compile(r'^worker-\d{2}$')
+    if not pattern_worker.match(worker_name):
+        logger.error(f"Wrong format, the argument has to be like worker-xx")
+        return {}
+        
+    url = f"http://testbed.expeca.proj.kth.se:56901/?name={worker_name}"
+    response = requests.get(url)
+    if response.status_code == 200:
+        return response.json()
+    else:
+        logger.error(f"Failed to retrieve data, status code: {response.status_code}")
+        return {}
 
 def get_container_status(containername: str) -> str:
     containerslist = chi.container.list_containers()
