@@ -39,7 +39,23 @@ def get_segment_ids(radio_name):
     url = f"http://testbed.expeca.proj.kth.se:56901/?name={radio_name}"
     response = requests.get(url)
     if response.status_code == 200:
-        return response.json()
+        answer = response.json()
+        result = {}
+        if pattern_sdr.match(radio_name):
+            for key in answer.keys():
+                if 'mango' in key:
+                    result['rj45'] = answer[key]['segment_id']
+                if 'ni' in key:
+                    result['sfp'] = answer[key]['segment_id']
+        elif pattern_adv.match(radio_name):
+            for key in answer.keys():
+                if 'adv' in key:
+                    result['rj45'] = answer[key]['segment_id']
+        elif pattern_ep5g.match(radio_name):
+            for key in answer.keys():
+                if 'ep5g' in key:
+                    result['rj45'] = answer[key]['segment_id']
+        return result
     else:
         logger.error(f"Failed to retrieve data, status code: {response.status_code}")
         return {}
