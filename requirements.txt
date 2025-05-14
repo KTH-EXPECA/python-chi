@@ -5,7 +5,7 @@ openstacksdk
 paramiko
 loguru
 requests
-python-blazarclient @ git+https://github.com/ChameleonCloud/python-blazarclient.git
+chameleon-blazarclient @ git+https://github.com/ChameleonCloud/python-blazarclient.git
 python-cinderclient
 python-glanceclient
 python-ironicclient
